@@ -94,7 +94,7 @@ int main() {
     // type
     else if (program == "type" && args.size() > 1) {
       string arg = args[1];
-      if (arg == "exit" || arg == "echo" || arg == "type") {
+      if (arg == "exit" || arg == "echo" || arg == "type" || arg == "pwd" || arg == "cd") {
         cout << arg << " is a shell builtin" << endl;
       } else {
         string path = findInPath(arg);
@@ -103,6 +103,22 @@ int main() {
         } else {
           cout << arg << ": not found" << endl;
         }
+      }
+    }
+    // pwd
+    else if (program == "pwd") {
+      char cwd[1024];
+      if (getcwd(cwd, sizeof(cwd)) != nullptr) {
+        cout << cwd << endl;
+      } else {
+        cerr << "pwd: error getting current directory" << endl;
+      }
+    }
+    // cd
+    else if (program == "cd" && args.size() > 1) {
+      string path = args[1];
+      if (chdir(path.c_str()) != 0) {
+        cout << "cd: " << path << ": No such file or directory" << endl;
       }
     }
     // Try to execute as external program
