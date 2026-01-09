@@ -12,11 +12,14 @@ From CodeCrafters.io build-your-own-shell (C++23)
 #include <unistd.h>
 #include <sys/wait.h>
 #include <fcntl.h>
+#include <fstream>
 #include <readline/readline.h>
 #include <readline/history.h>
 
 using namespace std;
 namespace fs = std::filesystem;
+
+int last_appended_index = -1;
 
 const char* builtin_commands[] = {
   "echo",
@@ -317,18 +320,70 @@ void executeBuiltinInChild(const vector<string>& args) {
     }
   }
   else if (program == "history") {
-    int start = history_base;
-    int end = history_base + history_length;
-    
-    if (args.size() > 1) {
-      int n = stoi(args[1]);
-      start = max(history_base, end - n);
-    }
-    
-    for (int i = start; i < end; ++i) {
-      HIST_ENTRY* entry = history_get(i);
-      if (entry) {
-        cout << "    " << i << "  " << entry->line << endl;
+    if (args.size() > 2 && args[1] == "-r") {
+      // history -r <file> - read history from file
+      string filename = args[2];
+      ifstream file(filename);
+      if (file.is_open()) {
+        string line;
+        while (getline(file, line)) {
+          if (!line.empty()) {
+            add_history(line.c_str());
+          }
+        }
+        file.close();
+      } else {
+        cerr << "history: " << filename << ": No such file or directory" << endl;
+      }
+    } else if (args.size() > 2 && args[1] == "-w") {
+      // history -w <file> - write history to file
+      string filename = args[2];
+      ofstream file(filename);
+      if (file.is_open()) {
+        int start = history_base;
+        int end = history_base + history_length;
+        for (int i = start; i < end; ++i) {
+          HIST_ENTRY* entry = history_get(i);
+          if (entry) {
+            file << entry->line << endl;
+          }
+        }
+        file.close();
+      } else {
+        cerr << "history: " << filename << ": cannot create" << endl;
+      }
+    } else if (args.size() > 2 && args[1] == "-a") {
+      // history -a <file> - append new commands to file
+      string filename = args[2];
+      ofstream file(filename, ios::app);
+      if (file.is_open()) {
+        int start = (last_appended_index == -1) ? history_base : last_appended_index + 1;
+        int end = history_base + history_length;
+        for (int i = start; i < end; ++i) {
+          HIST_ENTRY* entry = history_get(i);
+          if (entry) {
+            file << entry->line << endl;
+          }
+        }
+        file.close();
+        last_appended_index = end - 1;
+      } else {
+        cerr << "history: " << filename << ": cannot create" << endl;
+      }
+    } else {
+      int start = history_base;
+      int end = history_base + history_length;
+      
+      if (args.size() > 1 && args[1] != "-r" && args[1] != "-w") {
+        int n = stoi(args[1]);
+        start = max(history_base, end - n);
+      }
+      
+      for (int i = start; i < end; ++i) {
+        HIST_ENTRY* entry = history_get(i);
+        if (entry) {
+          cout << "    " << i << "  " << entry->line << endl;
+        }
       }
     }
   }
@@ -615,18 +670,70 @@ int main() {
     }
     // history
     else if (program == "history") {
-      int start = history_base;
-      int end = history_base + history_length;
-      
-      if (args.size() > 1) {
-        int n = stoi(args[1]);
-        start = max(history_base, end - n);
-      }
-      
-      for (int i = start; i < end; ++i) {
-        HIST_ENTRY* entry = history_get(i);
-        if (entry) {
-          cout << "    " << i << "  " << entry->line << endl;
+      if (args.size() > 2 && args[1] == "-r") {
+        // history -r <file>
+        string filename = args[2];
+        ifstream file(filename);
+        if (file.is_open()) {
+          string line;
+          while (getline(file, line)) {
+            if (!line.empty()) {
+              add_history(line.c_str());
+            }
+          }
+          file.close();
+        } else {
+          cerr << "history: " << filename << ": No such file or directory" << endl;
+        }
+      } else if (args.size() > 2 && args[1] == "-a") {
+        // history -a <file>
+        string filename = args[2];
+        ofstream file(filename, ios::app);
+        if (file.is_open()) {
+          int start = (last_appended_index == -1) ? history_base : last_appended_index + 1;
+          int end = history_base + history_length;
+          for (int i = start; i < end; ++i) {
+            HIST_ENTRY* entry = history_get(i);
+            if (entry) {
+              file << entry->line << endl;
+            }
+          }
+          file.close();
+          last_appended_index = end - 1;
+        } else {
+          cerr << "history: " << filename << ": cannot create" << endl;
+        }
+      } else if (args.size() > 2 && args[1] == "-w") {
+        // history -w <file>
+        string filename = args[2];
+        ofstream file(filename);
+        if (file.is_open()) {
+          int start = history_base;
+          int end = history_base + history_length;
+          for (int i = start; i < end; ++i) {
+            HIST_ENTRY* entry = history_get(i);
+            if (entry) {
+              file << entry->line << endl;
+            }
+          }
+          file.close();
+        } else {
+          cerr << "history: " << filename << ": cannot create" << endl;
+        }
+      } else {
+        int start = history_base;
+        int end = history_base + history_length;
+        
+        if (args.size() > 1 && args[1] != "-r" && args[1] != "-w" && args[1] != "-a") {
+          int n = stoi(args[1]);
+          start = max(history_base, end - n);
+        }
+        
+        for (int i = start; i < end; ++i) {
+          HIST_ENTRY* entry = history_get(i);
+          if (entry) {
+            cout << "    " << i << "  " << entry->line << endl;
+          }
         }
       }
     }
