@@ -1,6 +1,6 @@
 # Build Your Own X Challenges - CodeCrafters
 
-## Shell - CPP
+## Shell - C++
 Find the code [here](https://github.com/djleamen/build-your-own-x/tree/master/shell-cpp/src)
 
 ![](https://backend.codecrafters.io/progress/shell/70642e6c-275b-48fc-80d9-b50d760223b6 "Shell - C++ Progress")
