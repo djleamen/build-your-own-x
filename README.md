@@ -11,6 +11,6 @@ Find the code [here](https://github.com/djleamen/build-your-own-x/tree/master/gi
 ![](https://backend.codecrafters.io/progress/git/562e550a-5ea9-4bbd-99a0-ba7e0623f946 "Java - Git Progress")
 
 ## HTTP Server - C#
-Find the code [here](https://github.com/djleamen/build-your-own-x/tree/master/http-sharp/src)
+Find the code [here](https://github.com/djleamen/build-your-own-x/tree/master/http-csharp/src)
 
 ![](https://backend.codecrafters.io/progress/http-server/ce5a2df0-cde9-445e-9f8a-7e5c562dd34a "HTTP Server - C# Progress")
